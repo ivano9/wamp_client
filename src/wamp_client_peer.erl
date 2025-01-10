@@ -628,8 +628,7 @@ handle_invocation({invocation, ReqId, RegId, Details, Args, KWArgs}, State) ->
                         )
                 },
             EUri = <<"wamp.error.invalid_argument">>,
-
-            awre:error(Conn, ReqId, #{}, EUri, [Error], #{});
+            awre:error(Conn, ReqId, Error, EUri, Args, KWArgs);
 
         Class:Reason:Stacktrace ->
             ?LOG_ERROR(#{
@@ -653,7 +652,7 @@ handle_invocation({invocation, ReqId, RegId, Details, Args, KWArgs}, State) ->
                 [error_uris, internal_error],
                 <<"com.myservice.error.internal">>
             ),
-            awre:error(Conn, ReqId, #{}, EUri, [Error], #{})
+            awre:error(Conn, ReqId, Error, EUri, Args, KWArgs)
     end.
 
 
@@ -725,7 +724,7 @@ handle_event({event, SubscriptionId, PubId, Details, Args, KWArgs}, State) ->
                         )
                 },
             RUri = <<"wamp.error.invalid_argument">>,
-            awre:error(Conn, PubId, #{}, RUri, [Error], #{});
+            awre:error(Conn, PubId, Error, RUri, Args, KWArgs);
 
         Class:Reason:Stacktrace ->
             %% @TODO review error handling and URIs
@@ -752,7 +751,7 @@ handle_event({event, SubscriptionId, PubId, Details, Args, KWArgs}, State) ->
                 [error_uris, internal_error],
                 <<"com.myservice.error.internal">>
             ),
-            awre:error(Conn, PubId, #{}, RUri, [Error], #{})
+            awre:error(Conn, PubId, Error, RUri, Args, KWArgs)
     end.
 
 apply_callback({Mod, Fun, Arities}, Details, Args, KWArgs) ->
