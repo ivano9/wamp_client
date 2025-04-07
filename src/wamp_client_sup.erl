@@ -20,7 +20,6 @@
 
 -behaviour(supervisor).
 
--define(SERVER, ?MODULE).
 -define(SUPERVISOR(Id, Mod, Args, Restart, Timeout), #{
     id => Id,
     start => {Mod, start_link, Args},
@@ -56,7 +55,7 @@
 %%====================================================================
 
 start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %%====================================================================
 %% Supervisor callbacks
@@ -66,25 +65,34 @@ start_link() ->
 init([]) ->
     Peers = wamp_client_config:get(peers, #{}),
 
-    Children =
-        maps:fold(
-            fun(Name, Peer, Acc) ->
-                Id = list_to_atom(
-                    "wamp_client_peer_sup-" ++
-                        atom_to_list(Name)
-                ),
-                Sup = ?SUPERVISOR(
-                    Id,
-                    wamp_client_peer_sup,
-                    [Id, Name, Peer],
-                    permanent,
-                    5000
-                ),
-                [Sup | Acc]
-            end,
-            [],
-            Peers
-        ),
+    AwreSup = ?SUPERVISOR(
+        awre_sup,
+        awre_sup,
+        [],
+        permanent,
+        5000
+    ),
+
+    Children0 = maps:fold(
+        fun(Name, Peer, Acc) ->
+            Id = list_to_atom(
+                "wamp_client_peer_sup-" ++
+                    atom_to_list(Name)
+            ),
+            Sup = ?SUPERVISOR(
+                Id,
+                wamp_client_peer_sup,
+                [Id, Name, Peer],
+                permanent,
+                5000
+            ),
+            [Sup | Acc]
+        end,
+        [],
+        Peers
+    ),
+
+    Children = [AwreSup | Children0],
 
     Specs = {{one_for_one, 5, 60}, Children},
     {ok, Specs}.
