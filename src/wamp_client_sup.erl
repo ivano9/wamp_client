@@ -55,6 +55,7 @@
 %%====================================================================
 
 start_link(Config) ->
+    application:ensure_all_started(gproc, permanent),
     supervisor:start_link({local, ?MODULE}, ?MODULE, [Config]).
 
 %%====================================================================

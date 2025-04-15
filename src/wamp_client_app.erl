@@ -31,7 +31,7 @@
 
 
 %% -----------------------------------------------------------------------------
-%% @doc Initialises plum_db configuration
+%% @doc Initialises wamp_client configuration
 %% @end
 %% -----------------------------------------------------------------------------
 start(_StartType, _StartArgs) ->
@@ -47,7 +47,7 @@ start(_StartType, _StartArgs) ->
 
 
 %% -----------------------------------------------------------------------------
-%% @doc Initialises plum_db configuration
+%% @doc
 %% @end
 %% -----------------------------------------------------------------------------
 stop(_State) ->
