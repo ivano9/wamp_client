@@ -47,7 +47,7 @@
           modules => [dynamic]}).
 
 %% API
--export([start_link/3]).
+-export([start_link/4]).
 %% SUPERVISOR CALLBACKS
 -export([init/1]).
 
@@ -59,13 +59,13 @@
 %% @doc
 %% @end
 %% -----------------------------------------------------------------------------
-start_link(SupName, PeerName, Peer) ->
+start_link(SupName, PeerName, PeerConfig, Config) ->
     NameString = atom_to_list(PeerName),
-    {ok, Sup} = OK = supervisor:start_link({local, SupName}, ?MODULE, [Peer]),
+    {ok, Sup} = OK = supervisor:start_link({local, SupName}, ?MODULE, [PeerConfig, Config]),
 
     %% Create the worker pool
-    Size = maps:get(pool_size, Peer, 1),
-    Type = maps:get(pool_type, Peer, round_robin),
+    Size = maps:get(pool_size, PeerConfig, 1),
+    Type = maps:get(pool_type, PeerConfig, round_robin),
     ok = gproc_pool:new(PeerName, Type, [{size, Size}]),
 
     %% Add peer instances
@@ -85,8 +85,8 @@ start_link(SupName, PeerName, Peer) ->
 %% SUPERVISOR CALLBACKS
 %% =============================================================================
 
-init([Peer]) ->
-    Children = [?WORKER(wamp_client_peer, [Peer], permanent, 5000)],
+init([PeerConfig, Config]) ->
+    Children = [?WORKER(wamp_client_peer, [PeerConfig, Config], permanent, 5000)],
     Specs = {{simple_one_for_one, 5, 60}, Children},
     {ok, Specs}.
 

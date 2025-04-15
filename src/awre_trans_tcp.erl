@@ -93,7 +93,7 @@ init(
             raw_msgpack ->
                 2;
             raw_erlbin ->
-                EBinNumber = application:get_env(awre, erlbin_number, undefined),
+                EBinNumber = application:get_env(wamp_client, erlbin_number, undefined),
                 case {is_integer(EBinNumber), EBinNumber > 0} of
                     {true, true} -> EBinNumber;
                     _ -> error("application parameter erlbin_number not set")

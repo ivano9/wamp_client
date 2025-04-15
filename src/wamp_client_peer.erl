@@ -96,7 +96,7 @@
 -export_type([error/0]).
 
 %% API
--export([start_link/3]).
+-export([start_link/4]).
 -export([handle_invocation/2]).
 -export([handle_event/2]).
 -export([call/2]).
@@ -128,11 +128,11 @@
 %% API
 %% =============================================================================
 
-start_link(Config, Peername, WorkerName) ->
+start_link(PeerConfig, Config, Peername, WorkerName) ->
     gen_server:start_link(
         {local, WorkerName},
         ?MODULE,
-        [Peername, WorkerName, Config],
+        [Peername, WorkerName, PeerConfig, Config],
         []
     ).
 
@@ -439,10 +439,10 @@ info(Peername) when is_atom(Peername) ->
 %% GEN_SERVER CALLBACKS
 %% =============================================================================
 
-init([Peername, WorkerName, Config]) ->
+init([Peername, WorkerName, PeerConfig, Config]) ->
     process_flag(trap_exit, true),
 
-    Router = get_router(Config),
+    Router = get_router(PeerConfig, Config),
 
     State =
         #state{
@@ -450,8 +450,8 @@ init([Peername, WorkerName, Config]) ->
             router = Router,
             backoff = init_backoff(Router),
             max_retries = maps:get(reconnect_max_retries, Router, 10),
-            registrations = process_registrations(Config),
-            subscriptions = process_subscriptions(Config)
+            registrations = process_registrations(PeerConfig, Config),
+            subscriptions = process_subscriptions(PeerConfig, Config)
         },
 
     %% We add the worker to the gproc pool
@@ -648,11 +648,22 @@ handle_invocation({invocation, ReqId, RegId, Details, Args, KWArgs}, State) ->
                 description =>
                     <<"There was an internal error, please contact the administrator.">>
             },
-            EUri = wamp_client_config:get(
-                [error_uris, internal_error],
-                <<"com.myservice.error.internal">>
-            ),
+            EUri = internal_error_uri(),
             awre:error(Conn, ReqId, Error, EUri, Args, KWArgs)
+    end.
+
+
+%% @private
+internal_error_uri() ->
+    Key = {?MODULE, internal_error_uri},
+    case persistent_term:get(Key, undefined) of
+        undefined ->
+            ErrorUris = application:get_env(wamp_client, error_uris, #{}),
+            InternalErrorUri = key_value:get(internal_error, ErrorUris, <<"com.myservice.error.internal">>),
+            _ = persistent_term:put(Key, InternalErrorUri),
+            InternalErrorUri;
+        InternalErrorUri ->
+            InternalErrorUri
     end.
 
 
@@ -747,10 +758,7 @@ handle_event({event, SubscriptionId, PubId, Details, Args, KWArgs}, State) ->
                     description =>
                         <<"There was an internal error, please contact the administrator.">>
                 },
-            RUri = wamp_client_config:get(
-                [error_uris, internal_error],
-                <<"com.myservice.error.internal">>
-            ),
+            RUri = internal_error_uri(),
             awre:error(Conn, PubId, Error, RUri, Args, KWArgs)
     end.
 
@@ -1036,11 +1044,11 @@ to_handler_args(Details, Args, KWArgs, Arities) ->
 
 
 
-get_router(#{router := RouterName}) ->
-    wamp_client_config:get([routers, RouterName]);
-get_router(_) ->
-    Default = wamp_client_config:get([defaults, router]),
-    wamp_client_config:get([routers, Default]).
+get_router(#{router := RouterName}, Config) ->
+    key_value:get([routers, RouterName], Config);
+get_router(_, Config) ->
+    Default = key_value:get([defaults, router], Config),
+    key_value:get([routers, Default], Config).
 
 init_backoff(Router) ->
     case maps:get(reconnect, Router, false) of
@@ -1056,21 +1064,16 @@ init_backoff(Router) ->
             undefined
     end.
 
-process_registrations(#{roles := #{callee := #{registrations := Map}}}) ->
-    DefaultOpts =
-        wamp_client_config:get([defaults, callee], ?DEFAULT_REGISTER_OPTS),
+process_registrations(#{roles := #{callee := #{registrations := Map}}}, Config) ->
+    DefaultOpts = key_value:get([defaults, callee], Config, ?DEFAULT_REGISTER_OPTS),
     process_callback_handlers(Map, DefaultOpts);
-process_registrations(_) ->
+process_registrations(_, _) ->
     #{}.
 
-process_subscriptions(#{roles := #{subscriber := #{subscriptions := Map}}}) ->
-    DefaultOpts =
-        wamp_client_config:get(
-            [defaults, subscriber],
-            ?DEFAULT_SUBSCRIBE_OPTS
-        ),
+process_subscriptions(#{roles := #{subscriber := #{subscriptions := Map}}}, Config) ->
+    DefaultOpts = key_value:get([defaults, subscriber], Config, ?DEFAULT_SUBSCRIBE_OPTS),
     process_callback_handlers(Map, DefaultOpts);
-process_subscriptions(_) ->
+process_subscriptions(_, _) ->
     #{}.
 
 process_callback_handlers(Map, DefaultOpts) ->

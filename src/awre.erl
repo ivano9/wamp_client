@@ -47,7 +47,7 @@
 %% @doc returns the version string for the application, used as agent description
 -spec get_version() -> Version :: binary().
 get_version() ->
-    case application:get_env(awre, agent, undefined) of
+    case application:get_env(wamp_client, agent, undefined) of
         undefined ->
             Ver =
                 case application:get_key(vsn) of

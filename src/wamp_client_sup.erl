@@ -46,7 +46,7 @@
 }).
 
 %% API
--export([start_link/0]).
+-export([start_link/1]).
 %% Supervisor callbacks
 -export([init/1]).
 
@@ -54,16 +54,16 @@
 %% API functions
 %%====================================================================
 
-start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+start_link(Config) ->
+    supervisor:start_link({local, ?MODULE}, ?MODULE, [Config]).
 
 %%====================================================================
 %% Supervisor callbacks
 %%====================================================================
 
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
-init([]) ->
-    Peers = wamp_client_config:get(peers, #{}),
+init([Config]) ->
+    Peers = key_value:get(peers, Config, #{}),
 
     AwreSup = ?SUPERVISOR(
         awre_sup,
@@ -74,7 +74,7 @@ init([]) ->
     ),
 
     Children0 = maps:fold(
-        fun(Name, Peer, Acc) ->
+        fun(Name, PeerConfig, Acc) ->
             Id = list_to_atom(
                 "wamp_client_peer_sup-" ++
                     atom_to_list(Name)
@@ -82,7 +82,7 @@ init([]) ->
             Sup = ?SUPERVISOR(
                 Id,
                 wamp_client_peer_sup,
-                [Id, Name, Peer],
+                [Id, Name, PeerConfig, Config],
                 permanent,
                 5000
             ),

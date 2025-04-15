@@ -16,19 +16,11 @@
 %%  limitations under the License.
 %% =============================================================================
 -module(wamp_client_app).
-
 -behaviour(application).
+
 
 -export([start/2]).
 -export([stop/1]).
-
-% tracer() ->
-%     dbg:tracer(),
-%     dbg:p(all, c),
-%     dbg:tpl(awre, 'connect', x),
-%     dbg:tpl(awre_con, '_', x),
-%     dbg:tpl(awre_trans_tcp, '_', x).
-%     dbg:tpl(wamp_client_peer, '_', x).
 
 
 
@@ -44,8 +36,9 @@
 %% -----------------------------------------------------------------------------
 start(_StartType, _StartArgs) ->
     % tracer(),
-    ok = wamp_client_config:init(),
-    case wamp_client_sup:start_link() of
+    Config = application:get_all_env(wamp_client),
+    %% Start the supervisor
+    case wamp_client_sup:start_link(Config) of
         {ok, _} = OK ->
             OK;
         {error, _} = Error ->
@@ -59,3 +52,12 @@ start(_StartType, _StartArgs) ->
 %% -----------------------------------------------------------------------------
 stop(_State) ->
     ok.
+
+
+% tracer() ->
+%     dbg:tracer(),
+%     dbg:p(all, c),
+%     dbg:tpl(awre, 'connect', x),
+%     dbg:tpl(awre_con, '_', x),
+%     dbg:tpl(awre_trans_tcp, '_', x).
+%     dbg:tpl(wamp_client_peer, '_', x).
