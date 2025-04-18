@@ -45,9 +45,11 @@
         reconnect_backoff_max => integer(),
         reconnect_backoff_type => jitter | normal,
         auth => #{
-            method := anonymous | password | wampcra,
+            method := anonymous | password | wampcra | cryptosign,
             user := binary(),
-            secret := binary()
+            secret := binary(),
+            pubkey := binary(),
+            privkey := binary()
         }
     }.
 -type handler() :: {module(), atom(), [integer()]} | {function(), [integer()]}.
