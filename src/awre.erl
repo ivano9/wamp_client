@@ -25,7 +25,7 @@
 -define(TIMEOUT, 15000).
 
 %% API for connecting to a router (either local or remote)
--export([start_client/0]).
+-export([start_client/1]).
 -export([stop_client/1, stop_client/3]).
 
 -export([connect/2]).
@@ -70,9 +70,9 @@ get_version() ->
 
 %% @doc start a connection server to handle a connection to a router.
 %% The connection can be either remote or local within the VM.
--spec start_client() -> {ok, Con :: pid()}.
-start_client() ->
-    supervisor:start_child(awre_sup, [[]]).
+-spec start_client(atom()) -> {ok, Con :: pid()}.
+start_client(AwreSupId) ->
+    supervisor:start_child(AwreSupId, [[]]).
 
 %% @doc stop the given connection
 %% TODO: implement
