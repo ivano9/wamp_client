@@ -23,24 +23,59 @@
 %% @private
 
 -module(awre_sup).
+
 -behaviour(supervisor).
 
-%% API.
--export([start_link/0]).
+-include("supervision_spec.hrl").
 
-%% supervisor.
+%% API
+-export([start_link/0]).
+-export([start_link/1]).
+
+%% SUPERVISOR CALLBACKS
 -export([init/1]).
 
-%% API.
 
--spec start_link() -> {ok, pid()}.
+
+%% =============================================================================
+%% API
+%% =============================================================================
+
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec start_link() -> {ok, pid()} | {error, term()}.
 start_link() ->
-  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+	supervisor:start_link({local, ?MODULE}, ?MODULE, [awre_con]).
 
-%% supervisor.
 
-init([]) ->
-Procs = [
-		{awre_con, {awre_con, start_link, []}, temporary, 5000, worker, []}
-	],
-	{ok, {{simple_one_for_one, 10, 10}, Procs}}.
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @param Id The unique identifier for the awre supervisor
+%% @end
+%% -----------------------------------------------------------------------------
+-spec start_link(atom()) -> {ok, pid()} | {error, term()}.
+start_link(Id) ->
+	supervisor:start_link({local, Id}, ?MODULE, [Id, awre_con]).
+
+
+
+%% =============================================================================
+%% SUPERVISOR CALLBACKS
+%% =============================================================================
+
+
+
+%% -----------------------------------------------------------------------------
+%% @doc
+%% @end
+%% -----------------------------------------------------------------------------
+-spec init([atom()]) -> {ok, {supervisor:strategy(), [supervisor:child_spec()]}}.
+init(Ids) ->
+	AwreConId = wamp_client_utils:build_registration_name(Ids),
+	Children = [?WORKER(AwreConId, awre_con, [], temporary, 5000)],
+	Specs = {{simple_one_for_one, 10, 10}, Children},
+	{ok, Specs}.

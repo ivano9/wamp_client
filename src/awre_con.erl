@@ -98,7 +98,7 @@ init(_Args) ->
     %% dbg:tracer(), dbg:p(all,c),
     %% dbg:tpl(?MODULE, '_', []),
     %% dbg:tpl(awre_trans_tcp, '_', []),
-    Ets = ets:new(con_data, [set, protected, {keypos, 2}]),
+    Ets = ets:new(undefined, [set, protected, {keypos, 2}]),
     {ok, #state{ets = Ets}, ?TIMEOUT}.
 
 -spec send_to_client(Msg :: term(), Pid :: pid()) -> ok.

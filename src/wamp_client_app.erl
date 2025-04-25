@@ -57,7 +57,8 @@ stop(_State) ->
 % tracer() ->
 %     dbg:tracer(),
 %     dbg:p(all, c),
-%     dbg:tpl(awre, 'connect', x),
+%     dbg:tpl(awre_sup, '_', x),
 %     dbg:tpl(awre_con, '_', x),
-%     dbg:tpl(awre_trans_tcp, '_', x).
+%     % dbg:tpl(awre_trans_tcp, '_', x).
+%     dbg:tpl(wamp_client_peer_sup, '_', x),
 %     dbg:tpl(wamp_client_peer, '_', x).
