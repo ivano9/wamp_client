@@ -29,10 +29,6 @@
        {ref,"cc5cb5170e541ccde8793c2913684833c6b473bc"}},
   0},
  {<<"msgpack">>,{pkg,<<"msgpack">>,<<"0.8.1">>},0},
- {<<"pbkdf2">>,
-  {git,"https://github.com/Leapsight-oss/erlang-pbkdf2.git",
-       {ref,"84f964b1875b047c3ad93d43cc350c45d6e27f9c"}},
-  0},
  {<<"utils">>,
   {git,"https://github.com/Leapsight/utils.git",
        {ref,"cfd05ab4a02c2bfbd0ab16ae233de099a5710e21"}},
@@ -40,10 +36,6 @@
  {<<"wamp">>,
   {git,"https://github.com/Leapsight/wamp.git",
        {ref,"4dcdd89b60f638a9b7d0730dac4e63dee153e676"}},
-  0},
- {<<"wamper">>,
-  {git,"https://github.com/aramallo/wamper",
-       {ref,"b73357033145fe0c605086b36c2ecdaeabf0d461"}},
   0}]}.
 [
 {pkg_hash,[

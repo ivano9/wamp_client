@@ -16,18 +16,18 @@
 %%  limitations under the License.
 %% =============================================================================
 {application, wamp_client, [
-    {description, "Poorsman's WAMP client"},
+    {description, "An Erlang WAMP client"},
     {vsn, "2.0.0"},
     {registered, []},
     {mod, {wamp_client_app, []}},
-    {applications, [kernel,
+    {applications, [
+        kernel,
         stdlib,
         crypto,
         sasl,
         msgpack,
         gproc,
-        backoff,
-        wamper]
+        backoff]
     },
     {env, []},
     {modules, []},
