@@ -27,7 +27,8 @@
         sasl,
         msgpack,
         gproc,
-        backoff]
+        backoff,
+        wamp]
     },
     {env, []},
     {modules, []},
